@@ -1,3 +1,5 @@
+Becky Pollard - 100996193
+
 # COMP2152 — Assignment 2: Port Scanner
 
 Build a simple port scanner in Python. You'll use sockets, threading, SQLite, OOP with inheritance, and unit testing.
