@@ -5,19 +5,18 @@ Description: Port Scanner — A tool that scans a target machine for open networ
 """
 
 # Import the required modules (Step ii)
-
 import socket, threading, sqlite3, os, platform, datetime
 
-# Print Python version and OS name (Step iii)
 
+# Print Python version and OS name (Step iii)
 print("┏━━━━━━━━━━━━━━━━━━━━━━━━━┓")
 print(f"┃ Python Version: {platform.python_version()}  ┃")
 print(f"┃ Operating System: {os.name} ┃")
 print("┗━━━━━━━━━━━━━━━━━━━━━━━━━┛")
+print("")
 
 # Create the common_ports dictionary (Step iv)
 # Add a 1-line comment above it explaining what it stores
-
 # This dictionary maps common network port numbers to their human-readable service names label determined by IANA.
 common_ports = {
   21: "FTP",
@@ -34,19 +33,21 @@ common_ports = {
   8080: "HTTP-Alt"
 }
 
+
 # Create the NetworkTool parent class (Step v)
-# - Constructor: takes target, stores as private self.__target
-# - @property getter for target
-# - @target.setter with empty string validation
-# - Destructor: prints "NetworkTool instance destroyed"
+#     - Constructor: takes target, stores as private self.__target
+#     - @property getter for target
+#     - @target.setter with empty string validation
+#     - Destructor: prints "NetworkTool instance destroyed"
 class NetworkTool:
   def __init__(self, target: str):
-    self.target = target # self.__target
+    self.target = target
 
   @property
   def target(self):
     return self.__target
 
+  # TODO review, i think i have misinterpreted this task or got mixed up in the if/else
   @target.setter
   def target(self, value):
     if not value or not isinstance(value, str) or value.strip() == "":
@@ -56,43 +57,34 @@ class NetworkTool:
 
   def __del__(self):
     print("NetworkTool instance destroyed!")
-
-
-# Question: What is the benefit of using @property and @target.setter?
+# Q3: What is the benefit of using @property and @target.setter?
 # TODO: Your 2-4 sentence answer here... (Part 2, Q3)
-
-
-# Question: How does PortScanner reuse code from NetworkTool?
+# Q1: How does PortScanner reuse code from NetworkTool?
 # TODO: Your 2-4 sentence answer here... (Part 2, Q1)
 
 
-# Create the PortScanner child class that inherits from NetworkTool (Step vi)
+# Create the PortScanner child class that inherits from NetworkTool (Step vi) and has the fllowing:
 # + Constructor: call super().__init__(target), initialize self.scan_results = [], self.lock = threading.Lock()
 # + Destructor: print "PortScanner instance destroyed", call super().__del__()
 # + scan_port(self, port):
 #     Q4: What would happen without try-except here?
-#     TODO: Your 2-4 sentence answer here... (Part 2, Q4)
-#
+#          TODO: Your 2-4 sentence answer here... (Part 2, Q4)
 #     - try-except with socket operations
-#          - Create socket, set timeout, connect_ex
-#          - Determine Open/Closed status
-#          - Look up service name from common_ports (use "Unknown" if not found)
-#          - Acquire lock, append (port, status, service_name) tuple, release lock
-#          - Close socket in finally block
-#          - Catch socket.error, print error message
-#
+#     - Create socket, set timeout, connect_ex
+#     - Determine Open/Closed status
+#     - Look up service name from common_ports (use "Unknown" if not found)
+#     - Acquire lock, append (port, status, service_name) tuple, release lock
+#     - Close socket in finally block
+#     - Catch socket.error, print error message
 # + get_open_ports(self):
 #     - Use list comprehension to return only "Open" results
-#
 #     Q2: Why do we use threading instead of scanning one port at a time?
-#     TODO: Your 2-4 sentence answer here... (Part 2, Q2)
-#
-# + scan_range(self, start_port, end_port):
+#          TODO: Your 2-4 sentence answer here... (Part 2, Q2)
+# + TODO scan_range(self, start_port, end_port):
 #     - Create threads list
 #     - Create Thread for each port targeting scan_port
 #     - Start all threads (one loop)
 #     - Join all threads (separate loop)
-
 class PortScanner(NetworkTool):
   def __init__(self, target):
     super().__init__(target)
@@ -104,21 +96,35 @@ class PortScanner(NetworkTool):
     super().__del__()
 
   def scan_port(self, port):
+    # Q4: What would happen without try-except here?
+    # TODO: Your 2-4 sentence answer here... (Part 2, Q4)
     try:
       sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
       sock.settimeout(1)
-      result = sock.connect_ex((self.target, port)) # INVESTIGATE THIS LINE
+      result = sock.connect_ex((self.target, port))
       if result == 0:
-        status = "Status = Open"
+        status = "Open"
       else:
-        status = "Status = Closed"
-    except socket.error as e:
-
+        status = "Closed"
+      service_name = common_ports.get(port, "Unknown")
+      self.lock.acquire()
+      self.scan_results.append((port, status, service_name))
+      self.lock.release()
+    except socket.error:
+      print(f"Error: something went wrong while scanning port {port}: {socket.error}")
     finally:
-      sock.close()
+      if sock:
+        sock.close()
+
+  def get_open_ports(self):
+    return [result for result in self.scan_results if result[1] == "Open"]
+    # Q2: Why do we use threading instead of scanning one port at a time?
+    # TODO: Your 2-4 sentence answer here... (Part 2, Q2)
+
+  # TODO def scan_range(self, start_port, end_port):
 
 
-# TODO: Create save_results(target, results) function (Step vii)
+# Create save_results(target, results) function (Step vii)
 # - Connect to scan_history.db
 # - CREATE TABLE IF NOT EXISTS scans (id, target, port, status, service, scan_date)
 # - INSERT each result with datetime.datetime.now()
