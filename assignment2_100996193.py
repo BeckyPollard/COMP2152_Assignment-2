@@ -76,6 +76,7 @@ PortScanner can thus reuse the target attribute without programming again the ha
 """
 
 
+
 # Create the PortScanner child class that inherits from NetworkTool (Step vi) and has the fllowing:
 # + Constructor: call super().__init__(target), initialize self.scan_results = [], self.lock = threading.Lock() ✓
 # + Destructor: print "PortScanner instance destroyed", call super().__del__() ✓
@@ -154,6 +155,7 @@ class PortScanner(NetworkTool):
       thread.join()
 
 
+
 # Create save_results(target, results) function (Step vii) ✓
 # - Connect to scan_history.db ✓
 # - CREATE TABLE IF NOT EXISTS scans (id✓, target✓, port✓, status✓, service✓, scan_date✓) ✓
@@ -185,6 +187,8 @@ def save_results(target, results):
   finally:
     connection.close()
 
+
+
 # Create load_past_scans() function (Step viii) ✓
 # - Connect to scan_history.db ✓
 # - SELECT all from scans ✓
@@ -209,6 +213,8 @@ def load_past_scans():
   finally:
     connection.close()
   print("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+
 
 # ============================================================
 # MAIN PROGRAM
@@ -235,6 +241,8 @@ if __name__ == "__main__":
   except ValueError:
     print("ERROR: Invalid input. Please enter a valid integer.")
 
+
+
   # After valid input (Step x)
   # - Create PortScanner object ✓
   # - Print "Scanning {target} from port {start} to {end}..." ✓
@@ -242,8 +250,8 @@ if __name__ == "__main__":
   # - Call get_open_ports() and print results ✓
   # - Print total open ports found ✓
   # - Call save_results() ✓
-  # - Ask "Would you like to see past scan history? (yes/no): "
-  # - If "yes", call load_past_scans()
+  # - Ask "Would you like to see past scan history? (yes/no): " ✓
+  # - If "yes", call load_past_scans() ✓
   scan = PortScanner(target)
   print(f"\nScanning {target} from port {start_port} to {end_port}...\n")
   scan.scan_range(start_port, end_port)
@@ -258,6 +266,7 @@ if __name__ == "__main__":
   showHistoryChoice = input("\nWould you like to see past scan history? (yes/no): ").strip().lower()
   if showHistoryChoice == "yes":
     load_past_scans()
+
 
 
 # Q5: New Feature Proposal
